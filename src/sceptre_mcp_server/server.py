@@ -36,6 +36,27 @@ def _validate_project_dir(sceptre_project_dir: str) -> None:
         )
 
 
+def _build_plan(
+    sceptre_project_dir: str,
+    command_path: str,
+    ignore_dependencies: bool = False,
+) -> SceptrePlan:
+    """Validate the project directory and build a SceptrePlan.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param command_path: Relative path to the stack or stack group within config/.
+    :param ignore_dependencies: If True, skip dependency resolution.
+    :returns: A ready-to-use SceptrePlan instance.
+    """
+    _validate_project_dir(sceptre_project_dir)
+    context = SceptreContext(
+        project_path=sceptre_project_dir,
+        command_path=command_path,
+        ignore_dependencies=ignore_dependencies,
+    )
+    return SceptrePlan(context)
+
+
 def _run_sceptre_command(
     sceptre_project_dir: str,
     command_path: str,
@@ -52,13 +73,7 @@ def _run_sceptre_command(
     :param ignore_dependencies: If True, skip dependency resolution.
     :returns: The raw result dict {stack_external_name: response}.
     """
-    _validate_project_dir(sceptre_project_dir)
-    context = SceptreContext(
-        project_path=sceptre_project_dir,
-        command_path=command_path,
-        ignore_dependencies=ignore_dependencies,
-    )
-    plan = SceptrePlan(context)
+    plan = _build_plan(sceptre_project_dir, command_path, ignore_dependencies)
     plan_command = getattr(plan, command)
     return plan_command(*args)
 
@@ -357,12 +372,7 @@ def list_stacks(sceptre_project_dir: str, stack_path: str = "") -> str:
     """
 
     def _run():
-        _validate_project_dir(sceptre_project_dir)
-        context = SceptreContext(
-            project_path=sceptre_project_dir,
-            command_path=stack_path,
-        )
-        plan = SceptrePlan(context)
+        plan = _build_plan(sceptre_project_dir, stack_path)
         plan.resolve(command="list")
 
         stacks = {}

@@ -834,6 +834,7 @@ class TestListStacks:
         mock_ctx.assert_called_once_with(
             project_path=str(tmp_path),
             command_path="dev",
+            ignore_dependencies=False,
         )
         assert "dev/vpc" in result
         assert "my-project-dev-vpc" in result
