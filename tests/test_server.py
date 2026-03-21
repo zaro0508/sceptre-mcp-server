@@ -842,6 +842,32 @@ class TestListStacks:
 
     @patch("sceptre_mcp_server.server.SceptrePlan")
     @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_empty_graph(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.graph.__iter__ = MagicMock(return_value=iter([]))
+        mock_plan_cls.return_value = mock_plan
+
+        result = _list_stacks(str(tmp_path))
+
+        assert "No stacks found" in result
+        assert "(all)" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_empty_graph_with_stack_path(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.graph.__iter__ = MagicMock(return_value=iter([]))
+        mock_plan_cls.return_value = mock_plan
+
+        result = _list_stacks(str(tmp_path), stack_path="prod")
+
+        assert "No stacks found" in result
+        assert "'prod'" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
     def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
         (tmp_path / "config").mkdir()
         mock_plan = MagicMock()
