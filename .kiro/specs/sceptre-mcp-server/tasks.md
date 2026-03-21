@@ -24,12 +24,12 @@
 
 ## Task 4: Implement Query Tools
 
-- [ ] 4. Implement stack query MCP tools
-  - [ ] 4.1 Implement `get_stack_status(sceptre_project_dir, stack_path) -> str` tool
-  - [ ] 4.2 Implement `describe_stack(sceptre_project_dir, stack_path) -> str` tool
-  - [ ] 4.3 Implement `describe_stack_outputs(sceptre_project_dir, stack_path) -> str` tool
-  - [ ] 4.4 Implement `describe_stack_resources(sceptre_project_dir, stack_path) -> str` tool
-  - [ ] 4.5 Implement `describe_stack_events(sceptre_project_dir, stack_path) -> str` tool
+- [x] 4. Implement stack query MCP tools
+  - [x] 4.1 Implement `get_stack_status(sceptre_project_dir, stack_path) -> str` tool
+  - [x] 4.2 Implement `describe_stack(sceptre_project_dir, stack_path) -> str` tool
+  - [x] 4.3 Implement `describe_stack_outputs(sceptre_project_dir, stack_path) -> str` tool
+  - [x] 4.4 Implement `describe_stack_resources(sceptre_project_dir, stack_path) -> str` tool
+  - [x] 4.5 Implement `describe_stack_events(sceptre_project_dir, stack_path) -> str` tool
 
 ## Task 5: Implement Template Tools
 

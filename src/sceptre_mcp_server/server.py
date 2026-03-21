@@ -167,6 +167,97 @@ def launch_stack(sceptre_project_dir: str, stack_path: str) -> str:
         return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
 
 
+@mcp.tool()
+def get_stack_status(sceptre_project_dir: str, stack_path: str) -> str:
+    """Get the current status of a CloudFormation stack via Sceptre.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with stack name and current CloudFormation status.
+    """
+    try:
+        result = _run_sceptre_command(sceptre_project_dir, stack_path, "get_status")
+        return _format_response(result, "get_status")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
+@mcp.tool()
+def describe_stack(sceptre_project_dir: str, stack_path: str) -> str:
+    """Describe a CloudFormation stack via Sceptre, returning full stack details.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with stack description details.
+    """
+    try:
+        result = _run_sceptre_command(sceptre_project_dir, stack_path, "describe")
+        return _format_response(result, "describe")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
+@mcp.tool()
+def describe_stack_outputs(sceptre_project_dir: str, stack_path: str) -> str:
+    """Retrieve the outputs of a CloudFormation stack via Sceptre.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with stack output keys and values.
+    """
+    try:
+        result = _run_sceptre_command(
+            sceptre_project_dir, stack_path, "describe_outputs"
+        )
+        return _format_response(result, "describe_outputs")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
+@mcp.tool()
+def describe_stack_resources(sceptre_project_dir: str, stack_path: str) -> str:
+    """List the resources in a CloudFormation stack via Sceptre.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with resource identifiers, types, and statuses.
+    """
+    try:
+        result = _run_sceptre_command(
+            sceptre_project_dir, stack_path, "describe_resources"
+        )
+        return _format_response(result, "describe_resources")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
+@mcp.tool()
+def describe_stack_events(sceptre_project_dir: str, stack_path: str) -> str:
+    """Retrieve the events for a CloudFormation stack via Sceptre.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with stack event records.
+    """
+    try:
+        result = _run_sceptre_command(
+            sceptre_project_dir, stack_path, "describe_events"
+        )
+        return _format_response(result, "describe_events")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
 def main():
     """Entry point for the sceptre-mcp-server console script."""
     mcp.run()
