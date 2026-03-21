@@ -112,7 +112,7 @@ def main():
     mcp.run()
 ```
 
-Registered in `pyproject.toml` as `sceptre-mcp-server = "sceptre_mcp_server.server:main"`.
+Registered in `pyproject.toml` as `sceptre-mcp-server = "sceptre_mcp_server.server:main"` under `[tool.poetry.scripts]`.
 
 ## Tool Specifications
 
@@ -259,6 +259,8 @@ sceptre-mcp-server/
 | `fastmcp` | `>=0.2.0` | MCP server framework |
 | `sceptre` | `>=4.0.0` | CloudFormation management library |
 
+Build system: `poetry-core` (configured in `[build-system]`)
+
 ## Traceability Matrix
 
 | Requirement | Tool(s) | Design Section |
@@ -283,4 +285,4 @@ sceptre-mcp-server/
 | Req 18: Dump Config | `dump_config` | Configuration Tools |
 | Req 19: Parameters | All tools | Tool Specifications (common pattern) |
 | Req 20: Error Handling | All tools | Error Handling Strategy |
-| Req 21: Distribution | `pyproject.toml`, `main()` | Components §3, Dependencies |
+| Req 21: Distribution | `pyproject.toml` (poetry-core), `main()` | Components §3, Dependencies |

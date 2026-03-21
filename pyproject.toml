@@ -1,24 +1,22 @@
-[project]
+[tool.poetry]
 name = "sceptre-mcp-server"
 version = "0.1.0"
 description = "MCP server for Sceptre CloudFormation management"
 readme = "README.md"
 license = "Apache-2.0"
-requires-python = ">=3.10, <4.0"
-dependencies = [
-    "fastmcp>=0.2.0",
-    "sceptre>=4.0.0"
-]
+packages = [{include = "sceptre_mcp_server", from = "src"}]
 
-[project.scripts]
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+fastmcp = ">=0.2.0"
+sceptre = ">=4.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.0"
+
+[tool.poetry.scripts]
 sceptre-mcp-server = "sceptre_mcp_server.server:main"
 
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

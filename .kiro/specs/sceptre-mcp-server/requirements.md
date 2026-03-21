@@ -224,7 +224,7 @@ The sceptre-mcp-server exposes Sceptre's CloudFormation management capabilities 
 
 #### Acceptance Criteria
 
-1. THE sceptre-mcp-server package SHALL be installable via `pip install sceptre-mcp-server`
-2. THE sceptre-mcp-server package SHALL declare `fastmcp>=0.2.0` and `sceptre>=4.0.0` as runtime dependencies
-3. THE sceptre-mcp-server package SHALL use the `src/sceptre_mcp_server/` source layout as defined in pyproject.toml
-4. WHEN installed, THE sceptre-mcp-server package SHALL provide a `sceptre-mcp-server` console script entry point
+1. THE sceptre-mcp-server package SHALL be installable via `pip install sceptre-mcp-server` (from a built wheel) or via `poetry install` for development
+2. THE sceptre-mcp-server package SHALL declare `fastmcp>=0.2.0` and `sceptre>=4.0.0` as runtime dependencies in `[tool.poetry.dependencies]`
+3. THE sceptre-mcp-server package SHALL use the `src/sceptre_mcp_server/` source layout as defined in pyproject.toml with `poetry-core` as the build backend
+4. WHEN installed, THE sceptre-mcp-server package SHALL provide a `sceptre-mcp-server` console script entry point via `[tool.poetry.scripts]`

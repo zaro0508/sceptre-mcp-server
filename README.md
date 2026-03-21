@@ -170,13 +170,13 @@ Design documentation for this project lives in the `.kiro/specs/sceptre-mcp-serv
 ## Development
 
 ```bash
-# Clone and install in development mode
+# Clone and install dependencies
 git clone <repo-url>
 cd sceptre-mcp-server
-pip install -e ".[dev]"
+poetry install
 
 # Run tests
-pytest -q
+poetry run pytest -q
 ```
 
 ## License
