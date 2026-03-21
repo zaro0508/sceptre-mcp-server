@@ -6,13 +6,27 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from sceptre.exceptions import SceptreException
+
 from sceptre_mcp_server.server import (
     _format_response,
     _make_serializable,
     _run_sceptre_command,
     _validate_project_dir,
+    describe_stack,
+    describe_stack_events,
+    describe_stack_outputs,
+    describe_stack_resources,
+    get_stack_status,
     mcp,
 )
+
+# Unwrap FunctionTool objects to get the callable functions
+_get_stack_status = get_stack_status.fn
+_describe_stack = describe_stack.fn
+_describe_stack_outputs = describe_stack_outputs.fn
+_describe_stack_resources = describe_stack_resources.fn
+_describe_stack_events = describe_stack_events.fn
 
 
 def test_server_name():
@@ -183,3 +197,192 @@ class TestRunSceptreCommand:
             command_path="dev/vpc.yaml",
             ignore_dependencies=True,
         )
+
+
+# --- Query tool tests ---
+
+
+class TestGetStackStatus:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.get_status.return_value = {"my-stack": "CREATE_COMPLETE"}
+        mock_plan_cls.return_value = mock_plan
+
+        result = _get_stack_status(str(tmp_path), "dev/vpc.yaml")
+
+        mock_plan.get_status.assert_called_once()
+        assert "Stack: my-stack" in result
+        assert "Status: CREATE_COMPLETE" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.get_status.side_effect = SceptreException("Stack does not exist")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _get_stack_status(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Sceptre error" in result
+        assert "dev/vpc.yaml" in result
+
+    def test_invalid_project_dir(self):
+        result = _get_stack_status("/nonexistent", "dev/vpc.yaml")
+        assert "Unexpected error" in result
+        assert "dev/vpc.yaml" in result
+
+
+class TestDescribeStack:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe.return_value = {
+            "my-stack": {
+                "StackId": "arn:aws:stack/123",
+                "StackStatus": "CREATE_COMPLETE",
+            }
+        }
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack(str(tmp_path), "dev/vpc.yaml")
+
+        mock_plan.describe.assert_called_once()
+        assert "Stack: my-stack" in result
+        assert "arn:aws:stack/123" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe.side_effect = SceptreException("fail")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Sceptre error" in result
+
+
+class TestDescribeStackOutputs:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe_outputs.return_value = {
+            "my-stack": [{"OutputKey": "VpcId", "OutputValue": "vpc-123"}]
+        }
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack_outputs(str(tmp_path), "dev/vpc.yaml")
+
+        mock_plan.describe_outputs.assert_called_once()
+        assert "Stack: my-stack" in result
+        assert "VpcId" in result
+        assert "vpc-123" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe_outputs.side_effect = SceptreException("no outputs")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack_outputs(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Sceptre error" in result
+
+
+class TestDescribeStackResources:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe_resources.return_value = {
+            "my-stack": [
+                {
+                    "LogicalResourceId": "MyVpc",
+                    "PhysicalResourceId": "vpc-abc",
+                    "ResourceType": "AWS::EC2::VPC",
+                    "ResourceStatus": "CREATE_COMPLETE",
+                }
+            ]
+        }
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack_resources(str(tmp_path), "dev/vpc.yaml")
+
+        mock_plan.describe_resources.assert_called_once()
+        assert "Stack: my-stack" in result
+        assert "MyVpc" in result
+        assert "AWS::EC2::VPC" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe_resources.side_effect = SceptreException("fail")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack_resources(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Sceptre error" in result
+
+
+class TestDescribeStackEvents:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe_events.return_value = {
+            "my-stack": [
+                {
+                    "EventId": "evt-1",
+                    "ResourceStatus": "CREATE_COMPLETE",
+                    "LogicalResourceId": "MyVpc",
+                }
+            ]
+        }
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack_events(str(tmp_path), "dev/vpc.yaml")
+
+        mock_plan.describe_events.assert_called_once()
+        assert "Stack: my-stack" in result
+        assert "evt-1" in result
+        assert "MyVpc" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe_events.side_effect = SceptreException("fail")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack_events(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Sceptre error" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_unexpected_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.describe_events.side_effect = RuntimeError("boom")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _describe_stack_events(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Unexpected error" in result
+        assert "RuntimeError" in result
