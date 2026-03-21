@@ -272,18 +272,17 @@ def diff_stack(
     :param diff_type: Type of differ to use: "deepdiff" (default) or "difflib".
     :returns: Formatted diff output or error message.
     """
+    if diff_type not in ("deepdiff", "difflib"):
+        return f"Invalid diff_type '{diff_type}'. Must be 'deepdiff' or 'difflib'."
+
     try:
         _validate_project_dir(sceptre_project_dir)
         if diff_type == "difflib":
             stack_differ = DifflibStackDiffer()
             writer_class = DiffLibWriter
-        elif diff_type == "deepdiff":
+        else:
             stack_differ = DeepDiffStackDiffer()
             writer_class = DeepDiffWriter
-        else:
-            raise ValueError(
-                f"Invalid diff_type '{diff_type}'. Must be 'deepdiff' or 'difflib'."
-            )
 
         context = SceptreContext(
             project_path=sceptre_project_dir,

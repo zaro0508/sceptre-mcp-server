@@ -582,7 +582,6 @@ class TestDiffStack:
         mock_plan_cls.return_value = mock_plan
 
         mock_writer = MagicMock()
-        mock_writer.has_difference = True
 
         def write_side_effect():
             # Simulate writer writing to the buffer
