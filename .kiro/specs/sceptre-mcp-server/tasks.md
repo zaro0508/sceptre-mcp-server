@@ -9,10 +9,10 @@
 
 ## Task 2: Implement Helper Functions
 
-- [ ] 2. Implement core helper functions in `server.py`
-  - [ ] 2.1 Implement `_validate_project_dir(sceptre_project_dir: str) -> None` that checks directory exists and contains `config/` subdirectory
-  - [ ] 2.2 Implement `_run_sceptre_command(sceptre_project_dir, command_path, command, *args, ignore_dependencies=False) -> dict` that creates SceptreContext, SceptrePlan, and executes the command
-  - [ ] 2.3 Implement `_format_response(result: dict, command: str) -> str` that formats sceptre response dicts into human-readable text, handling StackStatus enums and datetime objects
+- [x] 2. Implement core helper functions in `server.py`
+  - [x] 2.1 Implement `_validate_project_dir(sceptre_project_dir: str) -> None` that checks directory exists and contains `config/` subdirectory
+  - [x] 2.2 Implement `_run_sceptre_command(sceptre_project_dir, command_path, command, *args, ignore_dependencies=False) -> dict` that creates SceptreContext, SceptrePlan, and executes the command
+  - [x] 2.3 Implement `_format_response(result: dict, command: str) -> str` that formats sceptre response dicts into human-readable text, handling StackStatus enums and datetime objects
 
 ## Task 3: Implement Stack Lifecycle Tools
 
