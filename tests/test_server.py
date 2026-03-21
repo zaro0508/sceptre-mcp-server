@@ -232,7 +232,7 @@ class TestGetStackStatus:
 
     def test_invalid_project_dir(self):
         result = _get_stack_status("/nonexistent", "dev/vpc.yaml")
-        assert "Unexpected error" in result
+        assert "Invalid project configuration" in result
         assert "dev/vpc.yaml" in result
 
 

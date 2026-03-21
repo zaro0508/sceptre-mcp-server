@@ -110,6 +110,8 @@ def create_stack(sceptre_project_dir: str, stack_path: str) -> str:
     try:
         result = _run_sceptre_command(sceptre_project_dir, stack_path, "create")
         return _format_response(result, "create")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
@@ -127,6 +129,8 @@ def update_stack(sceptre_project_dir: str, stack_path: str) -> str:
     try:
         result = _run_sceptre_command(sceptre_project_dir, stack_path, "update")
         return _format_response(result, "update")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
@@ -144,6 +148,8 @@ def delete_stack(sceptre_project_dir: str, stack_path: str) -> str:
     try:
         result = _run_sceptre_command(sceptre_project_dir, stack_path, "delete")
         return _format_response(result, "delete")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
@@ -161,6 +167,8 @@ def launch_stack(sceptre_project_dir: str, stack_path: str) -> str:
     try:
         result = _run_sceptre_command(sceptre_project_dir, stack_path, "launch")
         return _format_response(result, "launch")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
@@ -178,6 +186,8 @@ def get_stack_status(sceptre_project_dir: str, stack_path: str) -> str:
     try:
         result = _run_sceptre_command(sceptre_project_dir, stack_path, "get_status")
         return _format_response(result, "get_status")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
@@ -195,6 +205,8 @@ def describe_stack(sceptre_project_dir: str, stack_path: str) -> str:
     try:
         result = _run_sceptre_command(sceptre_project_dir, stack_path, "describe")
         return _format_response(result, "describe")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
@@ -214,6 +226,8 @@ def describe_stack_outputs(sceptre_project_dir: str, stack_path: str) -> str:
             sceptre_project_dir, stack_path, "describe_outputs"
         )
         return _format_response(result, "describe_outputs")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
@@ -233,6 +247,8 @@ def describe_stack_resources(sceptre_project_dir: str, stack_path: str) -> str:
             sceptre_project_dir, stack_path, "describe_resources"
         )
         return _format_response(result, "describe_resources")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
@@ -252,6 +268,8 @@ def describe_stack_events(sceptre_project_dir: str, stack_path: str) -> str:
             sceptre_project_dir, stack_path, "describe_events"
         )
         return _format_response(result, "describe_events")
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
     except SceptreException as e:
         return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
     except Exception as e:
