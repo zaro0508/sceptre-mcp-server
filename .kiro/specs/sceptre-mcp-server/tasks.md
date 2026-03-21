@@ -36,6 +36,7 @@
 - [ ] 5. Implement template MCP tools
   - [ ] 5.1 Implement `generate_template(sceptre_project_dir, stack_path) -> str` tool
   - [ ] 5.2 Implement `validate_template(sceptre_project_dir, stack_path) -> str` tool
+  - [ ] 5.3 Write unit tests for `generate_template` and `validate_template` with mocked SceptrePlan (success, SceptreException, ValueError, generic Exception)
 
 
 ## Task 6: Implement Diff and Drift Tools
@@ -44,12 +45,14 @@
   - [ ] 6.1 Implement `diff_stack(sceptre_project_dir, stack_path, diff_type="deepdiff") -> str` tool that creates the appropriate StackDiffer and formats output via DiffWriter
   - [ ] 6.2 Implement `drift_detect(sceptre_project_dir, stack_path) -> str` tool
   - [ ] 6.3 Implement `drift_show(sceptre_project_dir, stack_path, drifted_only=False) -> str` tool
+  - [ ] 6.4 Write unit tests for `diff_stack`, `drift_detect`, and `drift_show` with mocked SceptrePlan (success, SceptreException, ValueError, generic Exception)
 
 ## Task 7: Implement Discovery and Configuration Tools
 
 - [ ] 7. Implement discovery and configuration MCP tools
   - [ ] 7.1 Implement `list_stacks(sceptre_project_dir, stack_path="") -> str` tool that iterates plan.graph to collect stack names and external names
   - [ ] 7.2 Implement `dump_config(sceptre_project_dir, stack_path) -> str` tool
+  - [ ] 7.3 Write unit tests for `list_stacks` and `dump_config` with mocked SceptrePlan (success, SceptreException, ValueError, generic Exception)
 
 ## Task 8: Implement Change Set Tools
 
@@ -59,15 +62,16 @@
   - [ ] 8.3 Implement `list_change_sets(sceptre_project_dir, stack_path) -> str` tool
   - [ ] 8.4 Implement `execute_change_set(sceptre_project_dir, stack_path, change_set_name) -> str` tool
   - [ ] 8.5 Implement `delete_change_set(sceptre_project_dir, stack_path, change_set_name) -> str` tool
+  - [ ] 8.6 Write unit tests for all change set tools with mocked SceptrePlan (success, SceptreException, ValueError, generic Exception)
 
 ## Task 9: Write Unit Tests
 
-- [ ] 9. Write unit tests for the server
-  - [ ] 9.1 Write tests for `_validate_project_dir` (valid dir, missing dir, missing config/)
-  - [ ] 9.2 Write tests for `_format_response` (normal responses, StackStatus enums, datetime objects, error cases)
-  - [ ] 9.3 Write tests for stack lifecycle tools (create, update, delete, launch) with mocked SceptrePlan
-  - [ ] 9.4 Write tests for query tools (status, describe, outputs, resources, events) with mocked SceptrePlan
-  - [ ] 9.5 Write tests for error handling (SceptreException, generic Exception)
+- [x] 9. Write unit tests for the server (superseded — tests are now embedded in each implementation task above)
+  - [x] 9.1 Write tests for `_validate_project_dir` (valid dir, missing dir, missing config/) — covered in existing tests
+  - [x] 9.2 Write tests for `_format_response` (normal responses, StackStatus enums, datetime objects, error cases) — covered in existing tests
+  - [x] 9.3 Write tests for stack lifecycle tools (create, update, delete, launch) with mocked SceptrePlan — covered in Task 3
+  - [x] 9.4 Write tests for query tools (status, describe, outputs, resources, events) with mocked SceptrePlan — covered in Task 4
+  - [x] 9.5 Write tests for error handling (SceptreException, generic Exception) — covered in existing tests (41 tests passing)
 
 ## Task 10: Update README
 
