@@ -22,9 +22,11 @@ from sceptre_mcp_server.server import (
     diff_stack,
     drift_detect,
     drift_show,
+    dump_config,
     generate_template,
     get_stack_status,
     launch_stack,
+    list_stacks,
     mcp,
     update_stack,
     validate_template,
@@ -45,6 +47,8 @@ _validate_template = validate_template.fn
 _diff_stack = diff_stack.fn
 _drift_detect = drift_detect.fn
 _drift_show = drift_show.fn
+_list_stacks = list_stacks.fn
+_dump_config = dump_config.fn
 
 
 def test_server_name():
@@ -779,6 +783,167 @@ class TestDriftShow:
         mock_plan_cls.return_value = mock_plan
 
         result = _drift_show(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Unexpected error" in result
+        assert "RuntimeError" in result
+
+
+# --- Discovery and Configuration tool tests ---
+
+
+class TestListStacks:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+
+        stack_a = MagicMock()
+        stack_a.name = "dev/vpc"
+        stack_a.external_name = "my-project-dev-vpc"
+        stack_b = MagicMock()
+        stack_b.name = "dev/app"
+        stack_b.external_name = "my-project-dev-app"
+
+        mock_plan = MagicMock()
+        mock_plan.graph.__iter__ = MagicMock(return_value=iter([stack_a, stack_b]))
+        mock_plan_cls.return_value = mock_plan
+
+        result = _list_stacks(str(tmp_path))
+
+        mock_plan.resolve.assert_called_once_with(command="list")
+        assert "dev/vpc" in result
+        assert "my-project-dev-vpc" in result
+        assert "dev/app" in result
+        assert "my-project-dev-app" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success_with_stack_path(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+
+        stack = MagicMock()
+        stack.name = "dev/vpc"
+        stack.external_name = "my-project-dev-vpc"
+
+        mock_plan = MagicMock()
+        mock_plan.graph.__iter__ = MagicMock(return_value=iter([stack]))
+        mock_plan_cls.return_value = mock_plan
+
+        result = _list_stacks(str(tmp_path), stack_path="dev")
+
+        mock_ctx.assert_called_once_with(
+            project_path=str(tmp_path),
+            command_path="dev",
+            ignore_dependencies=False,
+        )
+        assert "dev/vpc" in result
+        assert "my-project-dev-vpc" in result
+        assert "'dev'" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_empty_graph(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.graph.__iter__ = MagicMock(return_value=iter([]))
+        mock_plan_cls.return_value = mock_plan
+
+        result = _list_stacks(str(tmp_path))
+
+        assert "No stacks found" in result
+        assert "(all)" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_empty_graph_with_stack_path(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.graph.__iter__ = MagicMock(return_value=iter([]))
+        mock_plan_cls.return_value = mock_plan
+
+        result = _list_stacks(str(tmp_path), stack_path="prod")
+
+        assert "No stacks found" in result
+        assert "'prod'" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.resolve.side_effect = SceptreException("graph error")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _list_stacks(str(tmp_path))
+
+        assert "Sceptre error" in result
+
+    def test_invalid_project_dir(self):
+        result = _list_stacks("/nonexistent")
+        assert "Invalid project configuration" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_unexpected_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.resolve.side_effect = RuntimeError("boom")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _list_stacks(str(tmp_path))
+
+        assert "Unexpected error" in result
+        assert "RuntimeError" in result
+
+
+class TestDumpConfig:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.dump_config.return_value = {
+            "my-stack": {
+                "template_path": "templates/vpc.yaml",
+                "parameters": {"CidrBlock": "10.0.0.0/16"},
+            }
+        }
+        mock_plan_cls.return_value = mock_plan
+
+        result = _dump_config(str(tmp_path), "dev/vpc.yaml")
+
+        mock_plan.dump_config.assert_called_once()
+        assert "Stack: my-stack" in result
+        assert "template_path" in result
+        assert "10.0.0.0/16" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.dump_config.side_effect = SceptreException("config error")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _dump_config(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Sceptre error" in result
+        assert "dev/vpc.yaml" in result
+
+    def test_invalid_project_dir(self):
+        result = _dump_config("/nonexistent", "dev/vpc.yaml")
+        assert "Invalid project configuration" in result
+        assert "dev/vpc.yaml" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_unexpected_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.dump_config.side_effect = RuntimeError("boom")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _dump_config(str(tmp_path), "dev/vpc.yaml")
 
         assert "Unexpected error" in result
         assert "RuntimeError" in result
