@@ -99,6 +99,42 @@ def _format_response(result: dict, command: str) -> str:
     return "\n".join(lines).strip()
 
 
+def _execute_tool(
+    sceptre_project_dir: str,
+    stack_path: str,
+    command: str,
+    *args,
+    ignore_dependencies: bool = False,
+) -> str:
+    """Execute a Sceptre command with standard error handling.
+
+    Central helper that all tool functions delegate to. Runs the command,
+    formats the response, and catches all expected exception types.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :param command: Name of the SceptrePlan method to invoke.
+    :param args: Additional positional arguments forwarded to the plan command.
+    :param ignore_dependencies: If True, skip dependency resolution.
+    :returns: Formatted result string or error message.
+    """
+    try:
+        result = _run_sceptre_command(
+            sceptre_project_dir,
+            stack_path,
+            command,
+            *args,
+            ignore_dependencies=ignore_dependencies,
+        )
+        return _format_response(result, command)
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
 @mcp.tool()
 def create_stack(sceptre_project_dir: str, stack_path: str) -> str:
     """Create a CloudFormation stack via Sceptre.
@@ -107,15 +143,7 @@ def create_stack(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with stack name and status.
     """
-    try:
-        result = _run_sceptre_command(sceptre_project_dir, stack_path, "create")
-        return _format_response(result, "create")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "create")
 
 
 @mcp.tool()
@@ -126,15 +154,7 @@ def update_stack(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with stack name and status.
     """
-    try:
-        result = _run_sceptre_command(sceptre_project_dir, stack_path, "update")
-        return _format_response(result, "update")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "update")
 
 
 @mcp.tool()
@@ -145,15 +165,7 @@ def delete_stack(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with stack name and status.
     """
-    try:
-        result = _run_sceptre_command(sceptre_project_dir, stack_path, "delete")
-        return _format_response(result, "delete")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "delete")
 
 
 @mcp.tool()
@@ -164,15 +176,7 @@ def launch_stack(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with stack name and status.
     """
-    try:
-        result = _run_sceptre_command(sceptre_project_dir, stack_path, "launch")
-        return _format_response(result, "launch")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "launch")
 
 
 @mcp.tool()
@@ -183,15 +187,7 @@ def get_stack_status(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with stack name and current CloudFormation status.
     """
-    try:
-        result = _run_sceptre_command(sceptre_project_dir, stack_path, "get_status")
-        return _format_response(result, "get_status")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "get_status")
 
 
 @mcp.tool()
@@ -202,15 +198,7 @@ def describe_stack(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with stack description details.
     """
-    try:
-        result = _run_sceptre_command(sceptre_project_dir, stack_path, "describe")
-        return _format_response(result, "describe")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "describe")
 
 
 @mcp.tool()
@@ -221,17 +209,7 @@ def describe_stack_outputs(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with stack output keys and values.
     """
-    try:
-        result = _run_sceptre_command(
-            sceptre_project_dir, stack_path, "describe_outputs"
-        )
-        return _format_response(result, "describe_outputs")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "describe_outputs")
 
 
 @mcp.tool()
@@ -242,17 +220,7 @@ def describe_stack_resources(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with resource identifiers, types, and statuses.
     """
-    try:
-        result = _run_sceptre_command(
-            sceptre_project_dir, stack_path, "describe_resources"
-        )
-        return _format_response(result, "describe_resources")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "describe_resources")
 
 
 @mcp.tool()
@@ -263,17 +231,7 @@ def describe_stack_events(sceptre_project_dir: str, stack_path: str) -> str:
     :param stack_path: Relative path to the stack config within the project.
     :returns: Formatted result with stack event records.
     """
-    try:
-        result = _run_sceptre_command(
-            sceptre_project_dir, stack_path, "describe_events"
-        )
-        return _format_response(result, "describe_events")
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+    return _execute_tool(sceptre_project_dir, stack_path, "describe_events")
 
 
 def main():
