@@ -16,11 +16,11 @@
 
 ## Task 3: Implement Stack Lifecycle Tools
 
-- [ ] 3. Implement stack lifecycle MCP tools
-  - [ ] 3.1 Implement `create_stack(sceptre_project_dir, stack_path) -> str` tool
-  - [ ] 3.2 Implement `update_stack(sceptre_project_dir, stack_path) -> str` tool
-  - [ ] 3.3 Implement `delete_stack(sceptre_project_dir, stack_path) -> str` tool
-  - [ ] 3.4 Implement `launch_stack(sceptre_project_dir, stack_path) -> str` tool
+- [x] 3. Implement stack lifecycle MCP tools
+  - [x] 3.1 Implement `create_stack(sceptre_project_dir, stack_path) -> str` tool
+  - [x] 3.2 Implement `update_stack(sceptre_project_dir, stack_path) -> str` tool
+  - [x] 3.3 Implement `delete_stack(sceptre_project_dir, stack_path) -> str` tool
+  - [x] 3.4 Implement `launch_stack(sceptre_project_dir, stack_path) -> str` tool
 
 ## Task 4: Implement Query Tools
 
