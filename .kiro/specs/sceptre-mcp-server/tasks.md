@@ -2,10 +2,10 @@
 
 ## Task 1: Project Scaffolding and Package Structure
 
-- [ ] 1. Set up the source directory and package files
-  - [ ] 1.1 Create `src/sceptre_mcp_server/__init__.py` (empty package init)
-  - [ ] 1.2 Create `src/sceptre_mcp_server/server.py` with FastMCP server instance and `main()` entry point
-  - [ ] 1.3 Create `tests/` directory with `tests/__init__.py` and `tests/test_server.py` skeleton
+- [x] 1. Set up the source directory and package files
+  - [x] 1.1 Create `src/sceptre_mcp_server/__init__.py` (empty package init)
+  - [x] 1.2 Create `src/sceptre_mcp_server/server.py` with FastMCP server instance and `main()` entry point
+  - [x] 1.3 Create `tests/` directory with `tests/__init__.py` and `tests/test_server.py` skeleton
 
 ## Task 2: Implement Helper Functions
 
