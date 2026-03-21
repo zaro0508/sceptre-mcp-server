@@ -49,10 +49,10 @@
 
 ## Task 7: Implement Discovery and Configuration Tools
 
-- [ ] 7. Implement discovery and configuration MCP tools
-  - [ ] 7.1 Implement `list_stacks(sceptre_project_dir, stack_path="") -> str` tool that iterates plan.graph to collect stack names and external names
-  - [ ] 7.2 Implement `dump_config(sceptre_project_dir, stack_path) -> str` tool
-  - [ ] 7.3 Write unit tests for `list_stacks` and `dump_config` with mocked SceptrePlan (success, SceptreException, ValueError, generic Exception)
+- [x] 7. Implement discovery and configuration MCP tools
+  - [x] 7.1 Implement `list_stacks(sceptre_project_dir, stack_path="") -> str` tool that iterates plan.graph to collect stack names and external names
+  - [x] 7.2 Implement `dump_config(sceptre_project_dir, stack_path) -> str` tool
+  - [x] 7.3 Write unit tests for `list_stacks` and `dump_config` with mocked SceptrePlan (success, SceptreException, ValueError, generic Exception)
 
 ## Task 8: Implement Change Set Tools
 
