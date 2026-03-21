@@ -616,13 +616,22 @@ class TestDiffStack:
         mock_plan_cls.return_value = mock_plan
 
         mock_writer = MagicMock()
+
+        def write_side_effect():
+            args = mock_writer_cls.call_args
+            output_stream = args[0][1]
+            output_stream.write("Difflib difference for stack my-stack\n")
+
+        mock_writer.write.side_effect = write_side_effect
         mock_writer_cls.return_value = mock_writer
 
-        _diff_stack(str(tmp_path), "dev/vpc.yaml", diff_type="difflib")
+        result = _diff_stack(str(tmp_path), "dev/vpc.yaml", diff_type="difflib")
 
         mock_differ_cls.assert_called_once()
         mock_plan.diff.assert_called_once_with(mock_differ)
         mock_writer_cls.assert_called_once()
+        mock_writer.write.assert_called_once()
+        assert "Difflib difference" in result
 
     def test_invalid_diff_type(self, tmp_path):
         (tmp_path / "config").mkdir()

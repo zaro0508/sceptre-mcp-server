@@ -102,6 +102,25 @@ def _format_response(result: dict, command: str) -> str:
     return "\n".join(lines).strip()
 
 
+def _safe_execute(stack_path: str, fn, *args, **kwargs) -> str:
+    """Run *fn* with standard Sceptre error handling.
+
+    :param stack_path: Used only for error messages.
+    :param fn: Callable that performs the actual work and returns a str.
+    :param args: Positional arguments forwarded to *fn*.
+    :param kwargs: Keyword arguments forwarded to *fn*.
+    :returns: The string returned by *fn*, or a formatted error message.
+    """
+    try:
+        return fn(*args, **kwargs)
+    except ValueError as e:
+        return f"Invalid project configuration for '{stack_path}': {e}"
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
 def _execute_tool(
     sceptre_project_dir: str,
     stack_path: str,
@@ -121,7 +140,8 @@ def _execute_tool(
     :param ignore_dependencies: If True, skip dependency resolution.
     :returns: Formatted result string or error message.
     """
-    try:
+
+    def _run():
         result = _run_sceptre_command(
             sceptre_project_dir,
             stack_path,
@@ -130,12 +150,8 @@ def _execute_tool(
             ignore_dependencies=ignore_dependencies,
         )
         return _format_response(result, command)
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+    return _safe_execute(stack_path, _run)
 
 
 @mcp.tool()
@@ -275,8 +291,7 @@ def diff_stack(
     if diff_type not in ("deepdiff", "difflib"):
         return f"Invalid diff_type '{diff_type}'. Must be 'deepdiff' or 'difflib'."
 
-    try:
-        _validate_project_dir(sceptre_project_dir)
+    def _run():
         if diff_type == "difflib":
             stack_differ = DifflibStackDiffer()
             writer_class = DiffLibWriter
@@ -284,13 +299,9 @@ def diff_stack(
             stack_differ = DeepDiffStackDiffer()
             writer_class = DeepDiffWriter
 
-        context = SceptreContext(
-            project_path=sceptre_project_dir,
-            command_path=stack_path,
-            ignore_dependencies=False,
+        diffs = _run_sceptre_command(
+            sceptre_project_dir, stack_path, "diff", stack_differ
         )
-        plan = SceptrePlan(context)
-        diffs = plan.diff(stack_differ)
 
         output_buffer = io.StringIO()
         for stack_diff in diffs.values():
@@ -301,12 +312,8 @@ def diff_stack(
             output_buffer.getvalue().strip()
             or f"No differences found for '{stack_path}'."
         )
-    except ValueError as e:
-        return f"Invalid project configuration for '{stack_path}': {e}"
-    except SceptreException as e:
-        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
-    except Exception as e:
-        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+    return _safe_execute(stack_path, _run)
 
 
 @mcp.tool()
