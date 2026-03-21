@@ -19,10 +19,12 @@ from sceptre_mcp_server.server import (
     describe_stack_events,
     describe_stack_outputs,
     describe_stack_resources,
+    generate_template,
     get_stack_status,
     launch_stack,
     mcp,
     update_stack,
+    validate_template,
 )
 
 # Unwrap FunctionTool objects to get the callable functions
@@ -35,6 +37,8 @@ _describe_stack = describe_stack.fn
 _describe_stack_outputs = describe_stack_outputs.fn
 _describe_stack_resources = describe_stack_resources.fn
 _describe_stack_events = describe_stack_events.fn
+_generate_template = generate_template.fn
+_validate_template = validate_template.fn
 
 
 def test_server_name():
@@ -442,6 +446,110 @@ class TestDescribeStackEvents:
         mock_plan_cls.return_value = mock_plan
 
         result = _describe_stack_events(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Unexpected error" in result
+        assert "RuntimeError" in result
+
+
+# --- Template tool tests ---
+
+
+class TestGenerateTemplate:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.generate.return_value = {
+            "my-stack": {"AWSTemplateFormatVersion": "2010-09-09", "Resources": {}}
+        }
+        mock_plan_cls.return_value = mock_plan
+
+        result = _generate_template(str(tmp_path), "dev/vpc.yaml")
+
+        mock_plan.generate.assert_called_once()
+        assert "Stack: my-stack" in result
+        assert "AWSTemplateFormatVersion" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.generate.side_effect = SceptreException("template not found")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _generate_template(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Sceptre error" in result
+        assert "dev/vpc.yaml" in result
+
+    def test_invalid_project_dir(self):
+        result = _generate_template("/nonexistent", "dev/vpc.yaml")
+        assert "Invalid project configuration" in result
+        assert "dev/vpc.yaml" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_unexpected_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.generate.side_effect = RuntimeError("boom")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _generate_template(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Unexpected error" in result
+        assert "RuntimeError" in result
+
+
+class TestValidateTemplate:
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_success(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.validate.return_value = {
+            "my-stack": {
+                "ResponseMetadata": {"RequestId": "abc-123"},
+                "Parameters": [],
+            }
+        }
+        mock_plan_cls.return_value = mock_plan
+
+        result = _validate_template(str(tmp_path), "dev/vpc.yaml")
+
+        mock_plan.validate.assert_called_once()
+        assert "Stack: my-stack" in result
+        assert "abc-123" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_sceptre_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.validate.side_effect = SceptreException("validation failed")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _validate_template(str(tmp_path), "dev/vpc.yaml")
+
+        assert "Sceptre error" in result
+        assert "dev/vpc.yaml" in result
+
+    def test_invalid_project_dir(self):
+        result = _validate_template("/nonexistent", "dev/vpc.yaml")
+        assert "Invalid project configuration" in result
+        assert "dev/vpc.yaml" in result
+
+    @patch("sceptre_mcp_server.server.SceptrePlan")
+    @patch("sceptre_mcp_server.server.SceptreContext")
+    def test_unexpected_error(self, mock_ctx, mock_plan_cls, tmp_path):
+        (tmp_path / "config").mkdir()
+        mock_plan = MagicMock()
+        mock_plan.validate.side_effect = RuntimeError("boom")
+        mock_plan_cls.return_value = mock_plan
+
+        result = _validate_template(str(tmp_path), "dev/vpc.yaml")
 
         assert "Unexpected error" in result
         assert "RuntimeError" in result

@@ -234,6 +234,28 @@ def describe_stack_events(sceptre_project_dir: str, stack_path: str) -> str:
     return _execute_tool(sceptre_project_dir, stack_path, "describe_events")
 
 
+@mcp.tool()
+def generate_template(sceptre_project_dir: str, stack_path: str) -> str:
+    """Generate a CloudFormation template from a Sceptre stack configuration.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: The rendered CloudFormation template body.
+    """
+    return _execute_tool(sceptre_project_dir, stack_path, "generate")
+
+
+@mcp.tool()
+def validate_template(sceptre_project_dir: str, stack_path: str) -> str:
+    """Validate a CloudFormation template via Sceptre.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Validation result or error details.
+    """
+    return _execute_tool(sceptre_project_dir, stack_path, "validate")
+
+
 def main():
     """Entry point for the sceptre-mcp-server console script."""
     mcp.run()
