@@ -8,6 +8,7 @@ from enum import Enum
 from fastmcp import FastMCP
 
 from sceptre.context import SceptreContext
+from sceptre.exceptions import SceptreException
 from sceptre.plan.plan import SceptrePlan
 
 mcp = FastMCP("sceptre-mcp-server")
@@ -96,6 +97,74 @@ def _format_response(result: dict, command: str) -> str:
             lines.append(json.dumps(serializable, indent=2, default=str))
         lines.append("")
     return "\n".join(lines).strip()
+
+
+@mcp.tool()
+def create_stack(sceptre_project_dir: str, stack_path: str) -> str:
+    """Create a CloudFormation stack via Sceptre.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with stack name and status.
+    """
+    try:
+        result = _run_sceptre_command(sceptre_project_dir, stack_path, "create")
+        return _format_response(result, "create")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
+@mcp.tool()
+def update_stack(sceptre_project_dir: str, stack_path: str) -> str:
+    """Update an existing CloudFormation stack via Sceptre.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with stack name and status.
+    """
+    try:
+        result = _run_sceptre_command(sceptre_project_dir, stack_path, "update")
+        return _format_response(result, "update")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
+@mcp.tool()
+def delete_stack(sceptre_project_dir: str, stack_path: str) -> str:
+    """Delete a CloudFormation stack via Sceptre.
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with stack name and status.
+    """
+    try:
+        result = _run_sceptre_command(sceptre_project_dir, stack_path, "delete")
+        return _format_response(result, "delete")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
+
+
+@mcp.tool()
+def launch_stack(sceptre_project_dir: str, stack_path: str) -> str:
+    """Launch a CloudFormation stack via Sceptre (create or update as needed).
+
+    :param sceptre_project_dir: Path to the Sceptre project directory.
+    :param stack_path: Relative path to the stack config within the project.
+    :returns: Formatted result with stack name and status.
+    """
+    try:
+        result = _run_sceptre_command(sceptre_project_dir, stack_path, "launch")
+        return _format_response(result, "launch")
+    except SceptreException as e:
+        return f"Sceptre error for '{stack_path}': {type(e).__name__}: {e}"
+    except Exception as e:
+        return f"Unexpected error for '{stack_path}': {type(e).__name__}: {e}"
 
 
 def main():
