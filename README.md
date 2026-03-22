@@ -174,9 +174,33 @@ Design documentation for this project lives in the `.kiro/specs/sceptre-mcp-serv
 git clone <repo-url>
 cd sceptre-mcp-server
 poetry install
+```
 
-# Run tests
+### Running Tests
+
+Run tests directly with pytest:
+
+```bash
 poetry run pytest -q
+```
+
+Run tests through [tox](https://tox.wiki/) for a specific Python version:
+
+```bash
+# Use the virtualenv tox binary directly (poetry run intercepts flags like -e)
+$(poetry env info -p)/bin/tox -e py312
+```
+
+Run against all configured Python versions (3.10–3.13, skips missing interpreters):
+
+```bash
+$(poetry env info -p)/bin/tox
+```
+
+Pass additional pytest arguments via `--`:
+
+```bash
+$(poetry env info -p)/bin/tox -e py312 -- -k "test_create_stack" -q
 ```
 
 ## License
